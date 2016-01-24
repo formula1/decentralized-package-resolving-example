@@ -1,0 +1,1 @@
+{"second_package":{"name":"second_package","location":"http://nodejs.org","host":{"location":"http://localhost:3000","priority":0}},"an_added_package":{"name":"an_added_package","location":"http://npmjs.com","host":{"location":"http://localhost:8080"}}}

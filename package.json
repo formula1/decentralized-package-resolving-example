@@ -1,0 +1,24 @@
+{
+  "name": "decentralized-package-management",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/example",
+    "client": "node ./client/bin",
+    "server": "node ./server/bin"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^2.9.0",
+    "ied": "^0.4.1",
+    "jsonfile": "^2.2.3",
+    "lodash": "^4.0.0",
+    "request": "^2.67.0",
+    "split": "^1.0.0"
+  },
+  "devDependencies": {
+    "expect": "^1.13.4"
+  }
+}

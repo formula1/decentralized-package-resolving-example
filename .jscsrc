@@ -1,0 +1,9 @@
+{
+  "preset": "airbnb",
+  "disallowSpaceAfterKeywords": true,
+  "requireSpaceAfterKeywords" : ["return"],
+  "requireSpaceBeforeBlockStatements": false,
+  "disallowSpaceBeforeBlockStatements": true,
+  "disallowMultipleVarDecl": false,
+  "requireCamelCaseOrUpperCaseIdentifiers": false
+}

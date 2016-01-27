@@ -9,7 +9,13 @@ var program = require('commander');
 process.nextTick(program.parse.bind(program, process.argv));
 program.version(pkg.version);
 
-var resolver = new Resolver(__dirname);
+var path = require('path');
+
+var DB = require('./DB');
+var cachedDB = new DB(path.join(__dirname, 'cached.json'));
+var trustedDB = new DB(path.join(__dirname, 'trusted.json'));
+
+var resolver = new Resolver(cachedDB, trustedDB);
 
 program
   .command('resolve [package_names...]')
@@ -42,4 +48,11 @@ program
   .action(function(host, options){
     resolver.untrust(host, !!options['keep-cache']);
     console.log('no longer trusting', host);
+  });
+
+program
+  .command('publish')
+  .description('Publishes your repo to your trusted hosts')
+  .action(function(){
+
   });

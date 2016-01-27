@@ -95,22 +95,26 @@ ResolverServer.prototype.handleRequest = function(req, res){
   }
 
   async.reduce(
-    this.trusted, [],
-    function(array, trusted, next){
-      mapHosts(query, { 'x-forwarded-for': req.connection.remoteAddress }, array, trusted, function(err, cur_array){
+    this.trusted, { errors: [], found: [] },
+    function(obj, trusted, next){
+      mapHosts(query, { 'x-forwarded-for': req.connection.remoteAddress }, obj, trusted, function(err, cur_array){
         if(err && err.statusCode === 403) return next(err);
         next(void 0, cur_array);
       });
     },
 
-    function(err, possible){
+    function(err, obj){
       if(err){
-        //console.log(err);
+        console.error(err);
         res.statusCode = 500;
         return res.end();
       }
 
-      if(!possible.length){
+      if(obj.errors.length){
+        //console.log('peer errors');
+      }
+
+      if(!obj.found.length){
         res.statusCode = 404;
         return res.end();
       }
@@ -118,7 +122,7 @@ ResolverServer.prototype.handleRequest = function(req, res){
       //console.log(possible);
 
       res.statusCode = 200;
-      res.end(JSON.stringify(possible));
+      res.end(JSON.stringify(obj.found));
     }
   );
 };

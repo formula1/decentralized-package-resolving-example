@@ -6,23 +6,32 @@ var pkg = require('../package.json');
 var program = require('commander');
 
 program.version(pkg.version);
+
 setImmediate(program.parse.bind(program, process.argv));
 
-var Server = require('./server');
-
-var server = new Server(`${__dirname}`);
+var RS = require('./index');
+var server;
 
 program
   .command('start')
   .description('starts the server')
   .option('-d, --directory <directory>', 'choose the directory it wants to run in')
-  .option('-p, --port <number>', 'choose the port the server will listen to')
+  .option('-hp, --http_port <number>', 'choose the port the http server will listen to')
+  .option('-tp, --torrent_port <number>', 'choose the port the torrent server will listen to')
   .action(function(options){
-    if(!options.directory) throw new Error('starting the server requires a directory');
-    server.useDirectory(options.directory);
-    if(options.port){
-      server.listen(options.port);
+    if(!options.directory){
+      throw new Error('starting the server requires a directory');
     }
+
+    if(!options.torrent_port){
+      throw new Error('starting the server requires a torrent_port');
+    }
+
+    if(!options.http_port){
+      throw new Error('starting the server requires a http_port');
+    }
+
+    server = RS(options.directory, options.http_port, options.torrent_port);
 
     console.log(`server ${options.port ? 'started' : 'waiting'} in directory ${options.directory}`);
     process.stdin.pipe(split()).on('data', function(line){

@@ -11,7 +11,7 @@ var mkdirp = require('mkdirp');
 var aDir = path.resolve(__dirname, './server_a');
 var bDir = path.resolve(__dirname, './server_b');
 var clientDir = path.resolve(__dirname, '../../client');
-var serverDir = path.resolve(__dirname, '../../server');
+var serverDir = path.resolve(__dirname, '../../registry-server');
 
 var httpPortA = 3000;
 var httpPortB = 3001;

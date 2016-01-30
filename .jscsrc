@@ -5,5 +5,10 @@
   "requireSpaceBeforeBlockStatements": false,
   "disallowSpaceBeforeBlockStatements": true,
   "disallowMultipleVarDecl": false,
-  "requireCamelCaseOrUpperCaseIdentifiers": false
+  "requireCamelCaseOrUpperCaseIdentifiers": false,
+  "requireSpacesInAnonymousFunctionExpression": false,
+  "disallowSpacesInAnonymousFunctionExpression": {
+    "beforeOpeningRoundBrace": true,
+    "beforeOpeningCurlyBrace": true
+  }
 }

@@ -1,0 +1,55 @@
+
+##### Names, Definitions and Purposes
+- **Package** - Software as a abstraction, utility or stand alone application. The Package is meant to be standardized in such away that given a simple handle, it is able to be installed easily. When dependencies become more complex, it is imperitive to ensure that the handles are resolved with absolute accuracy to what is required.
+- **Machine** - A process that may be stand alone or combined with others that is important to the **System**
+- **Handle** - A standardized query which can resolve to a **Transferable** or a **Package**. This standardization exists to ensure all can be reproduced identically from identical sources and is unique amoungst large amounts of sources.
+- **SemVer-H** - A **Handle** That is standardized inorder to facilitate this process
+- **Dist-H** - A unique type of **Handle** that a **Distributor** can resolve to a **Dist-T**.
+- **Repo-H** - A unique type of **Handle** that a **Repository** can resolve to a **Repo-T**.
+- **Transferable** - An unexecutable format a **Package** will take during distribution. The method of encoding or decoding to this format will be unique though standardized.
+- **Dist-T** - A **Transferable** sent from a **Distributor** which, given a **Dist-T-Pack-M**, can be transformed into a **Package**.
+- **Repo-T** - A **Transferable** sent from a **Repository** which, given a **Repo-T-Pack-M**, can be transformed into a **Package**
+- **Transform-Method** - The way a **Handle**, **Transferable** or **Package** can be processed into something else. **Distributors** and **Repositories** are expected to have standardized **Transform-Methods** which have an expected in and expected out.
+- **Pack-Dist-T-M** - a **Transform-Method** which transforms a **Package** into a **Dist-T**
+- **Repo-T-Pack-M** - a **Transform-Method** which transforms a **Repo-T**into a **Package**. This may accept additional arguments.
+- **Dist-T-Pack-M** - a **Transform-Method** which transforms a **Dist-T**into a **Package**
+- **Dist-T-Dist-H-M** - a **Transform-Method** which transforms a **Dist-T**into a **Dist-H**
+- **Pack-SemVer-H-M** - a **Transform-Method** which transforms a **Packages**into a **SemVer-H**
+- **Protocol** - The way you must communicate with one or more **Machines**. **Distributors** and **Repositories** are expected to have a standardized method of communication.
+- **Dist-P** - The method in which to communicate with a **Distributor**
+- **Repo-P** - The method in which to commincate with a **Repository**
+- **System** - A connected group of **Machines** that facilitate **Packages** will be discoverable and shared between developers. This group that may or may not have coorperate or personal relationships with any others. The **System** is meant to be organized and standardized in a way to maximize reliability and safety.
+
+There would be 4 types of machines that we will be indicating in this proposed solution
+- **Client** - A **Machine** whos purpose is to develop **Packages**
+  - They interface with the **System** in order to
+    - Resolve **SemVer-H** through **Registries** to a list of **Distributors**, **Dist-T-Pack-M** and  **Dist-H**
+    - transform **Packages** through a **Pack-SemVer-H-M** into **Semver-H**
+    - Resolve **Dist-H** from **Distributors** into a **Dist-T**
+    - transform **Dist-Ts** through a **Dist-T-Pack-M** into **Packages**
+    - write **Repo-Ts** to a **Repository**
+    - write **Repo-Hs** to a **Registry**
+- **Registry** - A **Machine** that facilitates **Packages** to be discovered and downloaded. It is their choice whether to accept any connections or requests. This may involve a higher degree of authentication than anonymity, higher quality in packages or other validation that is not up to this spec. Registries also ensure that their distributors are in synch with them. It's highly advised to be part of a network of **Registries** inorder to ensure synching of names.
+  - They Interface with with the **System** in order to
+    - resolve a **SemVer-H** to a list of **Distributors** and a **Dist-H** for each list
+    - authenticate **Repo-H** writes from **Clients**
+    - resolve **Repo-H** through **Repositories** to **Repo-Ts**
+    - process **Repo-Ts** into **Packages**
+    - transform **Packages** into **SemVer-H** and**Dist-Hs**
+    - index **SemVer-H** to resolve to **Dist-Hs**
+    - Accept **Distributor** applications
+    - Notify **Distrubtors** of the new **Packaged** with a **Repo-H**
+    - Validates **Dist-Hs** created by **Distributors** are identical to their own
+- **Repository** - A **Machine** that provides a write interface for **Clients** that can then be read by others over the internet.
+  - They interface with the **System** in order to
+    - accept writes from **Clients** through **Repo-Ts**
+    - resolves **Repo-Hs** to **Repo-Ts**
+    - authenticates Reads through **Repo-Hs**
+- **Distributor** - A **Machine** that mirrors **Repositories** that can be read by others over the internet.
+  - They interface with the **System** in order to
+    - resolve **Dist-Hs** to **Dist-Ts**
+    - accept new **Repo-Hs** from **Registries**
+    - transforms **Repo-Hs** to **Packages**
+    - transforms **Packages**  to **Dist-Ts** and **Dist-Hs**
+    - requests validation of their **Dist-Hs** from **Registries**
+    - accepts requests from other **Distributors** and **Clients**

@@ -7,7 +7,9 @@ var program = require('commander');
 
 program.version(pkg.version);
 
-setImmediate(program.parse.bind(program, process.argv));
+setImmediate(function(){
+  program.parse(process.argv);
+});
 
 var RS = require('./index');
 var server;
@@ -16,8 +18,8 @@ program
   .command('start')
   .description('starts the server')
   .option('-d, --directory <directory>', 'choose the directory it wants to run in')
-  .option('-hp, --http_port <number>', 'choose the port the http server will listen to')
-  .option('-tp, --torrent_port <number>', 'choose the port the torrent server will listen to')
+  .option('-h, --http_port <n>', 'choose the port the http server will listen to', parseInt)
+  .option('-t, --torrent_port <n>', 'choose the port the torrent server will listen to', parseInt)
   .action(function(options){
     if(!options.directory){
       throw new Error('starting the server requires a directory');
@@ -31,7 +33,7 @@ program
       throw new Error('starting the server requires a http_port');
     }
 
-    server = RS(options.directory, options.http_port, options.torrent_port);
+    server = new RS(options.directory, options.http_port, options.torrent_port);
 
     console.log(`server ${options.port ? 'started' : 'waiting'} in directory ${options.directory}`);
     process.stdin.pipe(split()).on('data', function(line){
@@ -54,23 +56,23 @@ program
   });
 
 program
-  .command('package [package_name]')
+  .command('package <name> <version>')
   .description('Allow a repository to be discoverable')
   .option('-r, --remove', 'removes the package as servable')
-  .option('-u, --url [url]', 'The package url')
-  .action(function(package_name, options){
+  .option('-h, --handle <handle>', 'The package handle that can be handled by this server')
+  .action(function(name, version, options){
     if(options.remove){
-      server.removePackage(package_name);
-      console.log('Removed package', package_name);
+      server.removePackage({ name: name, version: version });
+      console.log('Removed package', name);
       return;
     }
 
-    if(!options.url) throw new Error('need sa url');
+    if(!options.handle) throw new Error('needs a handle');
     server.addPackage({
-      name: package_name,
-      location: options.url,
+      semver: { name: name, version: version },
+      distribution: { handle: options.handle },
     });
-    console.log('Added package', package_name);
+    console.log('Added package', name);
   });
 
 program

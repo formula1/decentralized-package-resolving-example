@@ -8,12 +8,11 @@ var Http = require('./http');
 
 var ResolverServer;
 
-module.exports = ResolverServer = function(dirname, distribution_port, http_port){
+module.exports = ResolverServer = function(dirname, http_port, distribution_port){
   var dbs = this.dbs = {
     packages: path.join(dirname, 'packages.json'),
     registries: path.join(dirname, 'registries.json'),
     untrusted: path.join(dirname, 'untrusted.json'),
-    distributors: path.join(dirname, 'distributors.json'),
   };
 
   Object.keys(dbs).forEach(function(name){
@@ -27,7 +26,7 @@ module.exports = ResolverServer = function(dirname, distribution_port, http_port
     dbs[name] = new IndexedDB(filename);
   });
 
-  this.distribution = new Distribution(distribution_port, dbs.distributors);
+  this.distribution = new Distribution(distribution_port, dirname);
 
   Http(dbs, this.distribution, http_port);
 };

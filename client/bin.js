@@ -15,7 +15,7 @@ program
   .action(function(package_name){
 
     client.resolve(package_name).then(function(resolved_package){
-      console.log('found:', resolved_package.location);
+      console.log('found:', resolved_package.distribution.handle);
     }).catch(function(err){
       console.error('RESOLVE:', err);
     });

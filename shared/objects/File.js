@@ -16,7 +16,7 @@ File.prototype.exists = function(){
   });
 };
 
-Object.defineProperty('extname', File.prototype, {
+Object.defineProperty(File.prototype, 'extname', {
   get: function(){
     return path.extname(this.filename);
   },
@@ -76,7 +76,7 @@ File.prototype.streamContents = function(){
   return fs.createReadStream(this.filename);
 };
 
-File.protoype.toString = function(){
+File.prototype.toString = function(){
   return `File [${this.filename}]`;
 };
 

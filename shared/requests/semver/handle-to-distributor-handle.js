@@ -5,15 +5,21 @@ var request = require('request');
 var async = require('async');
 var _ = require('lodash');
 
+var NotFoundError = require('../../errors/NotFound');
+
 var reduceRegistries, addtoWeightedTrustFrom;
 
 module.exports = function(semver_handle, registries, headers){
   return new Promise(function(res, rej){
-    async.reduce(registries, { found: [], errors: [] },
+    async.reduce(registries, { found: [], errors: [], missing: [] },
       reduceRegistries.bind(void 0, semver_handle, headers || {}),
     function(err, obj){
       if(err) return rej(err);
-      if(!obj.found.length) return rej(obj.errors);
+      if(!obj.found.length){
+        if(!obj.errors.length) return rej(new NotFoundError(semver_handle.name, 'registries'));
+        return rej(obj.errors);
+      }
+
       res(obj.found);
     });
   });
@@ -24,28 +30,20 @@ reduceRegistries = function(query, headers, obj, registry, next){
     `${registry.location}?${qs.stringify(query)}`,
     { headers: headers },
     function(error, response, body){
-      if(error){
-        if(!response){
-          obj.errors.push({ registry: registry, error: error });
-          return next(void 0, obj);
-        }
-
-        error.statusCode = response.statusCode;
-        if(response.statusCode === 404){
-          obj.errors.push({ registry: registry, error: new Error('not found') });
-          return next(void 0, obj);
-        }
-
-        if(response.statusCode === 403){
-          obj.errors.push({ registry: registry, error: new Error('forbidden') });
-          return next(void 0, obj);
-        }
-
-        return next(error);
+      if(!response){
+        obj.errors.push({ registry: registry, error: error });
+        return next(void 0, obj);
       }
 
-      if(response.statusCode === 404){
-        obj.errors.push({ registry: registry, error: new Error('not found') });
+      switch(response.statusCode){
+        case 200: break;
+        case 404: obj.missing.push({ registry: registry }); break;
+        case 403: obj.errors.push({ registry: registry, error: new Error('forbidden') }); break;
+        case 500: obj.errors.push({ registry: registry, error: body }); break;
+        default: obj.errors.push({ registry: registry, error: body }); break;
+      }
+
+      if(response.statusCode !== 200){
         return next(void 0, obj);
       }
 

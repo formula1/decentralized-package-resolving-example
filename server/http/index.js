@@ -13,25 +13,39 @@ module.exports = function(dbs, distribution, port){
   var packages = dbs.packages;
 
   var router = new Router();
-  var server = new Server(router);
+  var server = new Server();
+
+  server.on('request', function(req, res){
+    router(req, res, function(err){
+      if(err){
+        res.statusCode = 500;
+        res.end(JSON.stringify(err.stack));
+      }else{
+        res.statusCode = 404;
+        res.end();
+      }
+    });
+  });
 
   return Promise.resolve().then(function(){
     router.use(function(req, res, next){
       req.forwarded = forwarded(req);
       untrusted.get().then(function(list){
-        isUntrusted(list, req).then(function(boo){
-          if(boo){
-            res.statusCode = 403;
-            return res.end();
-          }
+        return isUntrusted(list, req);
+      }).then(function(boo){
+        if(boo){
+          res.statusCode = 403;
+          return res.end();
+        }
 
-          next();
-        });
+        next();
+      }).catch(function(e){
+        next(e);
       });
     });
 
-    router.get('/package', require('./methods/get-package').bind(void 0, packages, registries));
-    router.post('/package', require('./methods/post-package').bind(void 0, packages, distribution));
+    router.get('/', require('./methods/get-package').bind(void 0, packages, registries, distribution));
+    router.post('/', require('./methods/post-package').bind(void 0, packages, distribution));
     router.post('/distributor', require('./methods/add-distributor').bind(void 0, packages, distribution));
 
     router.server = server;
@@ -51,6 +65,6 @@ isUntrusted = function(list, req){
   if(!req.forwarded.length) return false;
   var intersection = _.intersection([list, req.forwarded]);
   if(intersection.length){
-    return intersection[0];
+    return !intersection[0];
   }
 };

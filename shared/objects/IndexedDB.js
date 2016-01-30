@@ -8,8 +8,6 @@ module.exports = IndexedDB = function(path){
   this.rDB = new DB(path);
 };
 
-IndexedDB.prototype.
-
 IndexedDB.prototype.indexOf = function(index){
   return this.rDB.get().then(function(list){
     return _.findIndex(list, { index: index });
@@ -24,7 +22,11 @@ IndexedDB.prototype.has = function(index){
 
 IndexedDB.prototype.get = function(index){
   if(!index){
-    return this.rDB.get();
+    return this.rDB.get().then(function(list){
+      return list.map(function(item){
+        return item.meta;
+      });
+    });
   }
 
   this.rDB.get().then(function(list){
@@ -42,6 +44,10 @@ IndexedDB.prototype.add = function(index, meta){
     });
 
     return rDB.save(list);
+  }).then(function(list){
+    return list.map(function(item){
+      return item.meta;
+    });
   });
 };
 
@@ -52,5 +58,9 @@ IndexedDB.prototype.remove = function(index){
     if(i === -1) return;
     list.splice(i, 1);
     return rDB.save(list);
+  }).then(function(list){
+    return list.map(function(item){
+      return item.meta;
+    });
   });
 };

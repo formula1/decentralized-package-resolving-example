@@ -4,21 +4,23 @@ var WebTorrent = require('webtorrent');
 var async = require('async');
 var request = require('request');
 var qs = require('qs');
+var path = require('path');
+var validUrl = require('valid-url');
+
 var Distribution;
 var IndexedDB = require('../../shared/objects/IndexedDB');
 
 var notifyOfHandle;
 
-module.exports = Distribution = function(dirname, port){
+module.exports = Distribution = function(port, dirname){
   this.port = port;
-  this.client = new WebTorrent();
-  this.client.listen(port);
+  this.client = new WebTorrent({ torrentPort: port });
   if(dirname) this.setDirectory(dirname);
 };
 
 Distribution.prototype.setDirectory = function(dirname){
   this.dirname = dirname;
-  this.db = new IndexedDB(dirname);
+  this.distributors = new IndexedDB(path.join(dirname, 'distributors.json'));
 };
 
 Distribution.prototype.distribute = function(pkg){
@@ -44,8 +46,14 @@ Distribution.prototype.distribute = function(pkg){
 };
 
 Distribution.prototype.updateHandle = function(pkg){
+  var d_handle = pkg.distribution;
+  if(validUrl.isUri(d_handle.handle)){
+    d_handle.type = 'http';
+    return Promise.resolve(pkg);
+  }
+
   return this.distributors.get().then(function(list){
-    if(!list.length) return false;
+    if(!list.length) throw new Error('No Distributors Available');
     pkg.distribution.distributors = list;
     return pkg;
   });

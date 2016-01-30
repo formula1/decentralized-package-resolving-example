@@ -11,10 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bufferpack": "0.0.6",
     "commander": "^2.9.0",
-    "ip": "^1.1.0",
-    "js-ip": "^0.1.2",
     "lodash": "^4.0.0",
     "magnet-uri": "^5.1.2",
     "nodegit": "^0.9.0",
@@ -22,12 +19,13 @@
     "qs": "^6.0.2",
     "request": "^2.67.0",
     "semver": "^5.1.0",
-    "sha1": "^1.1.1",
     "split": "^1.0.0",
-    "tar-fs": "^1.9.0"
+    "tar-fs": "^1.9.0",
+    "valid-url": "^1.0.9"
   },
   "devDependencies": {
     "expect": "^1.13.4",
+    "mkdirp": "^0.5.1",
     "tap": "^5.2.0"
   }
 }

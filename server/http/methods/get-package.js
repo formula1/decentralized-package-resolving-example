@@ -2,22 +2,39 @@
 
 var qs = require('qs');
 var handleToDistHandle = require('../../../shared/requests/semver/handle-to-distributor-handle');
+var SemVer = require('semver');
 
-module.exports = function(packageDB, registryDB, distribution, req, res){
-  req.query = qs.parse(req.url, true);
+var NotFoundError = require('../../../shared/errors/NotFound');
 
-  return packageDB.get(JSON.stringify(req.query)).then(function(pkg){
-    if(!pkg) throw 'not found';
+module.exports = function(packageDB, registryDB, distribution, req, res, next){
+  req.query = qs.parse(req.url.split('?').slice(1).join('?'));
+
+  var semver;
+
+  return Promise.resolve(req.query).then(function(nSemver){
+    semver = nSemver;
+    if(semver.version && SemVer.validRange(semver.version)){
+      return packageDB.get(JSON.stringify(semver));
+    }else{
+      return packageDB.get().then(function(list){
+        if(list.length === 0) return false;
+        var filteredList = list.filter(function(item){ return item.semver.name === semver.name; });
+
+        // at some point tags need to be implemented But that is not within the scope of this project
+        return filteredList[0];
+      });
+    }
+  }).then(function(pkg){
+    if(!pkg) throw new NotFoundError(req.query.name, 'packages database');
     return distribution.updateHandle(pkg).then(function(nPkg){
-      if(!nPkg) throw 'not found';
       return [nPkg];
     });
   }).catch(function(e){
-    if(e !== 'not found') throw e;
+    if(!(e instanceof NotFoundError) && e.message !== 'No Distributors Available') throw e;
 
     // only forwarding once for now
     if(req.forwarded.length > 1){
-      throw 'not found';
+      throw new NotFoundError(semver.name);
     }
 
     return registryDB.get().then(function(registries){
@@ -27,18 +44,13 @@ module.exports = function(packageDB, registryDB, distribution, req, res){
       );
     });
   }).then(function(pkgs){
-    if(!pkgs.length) throw 'not found';
+    if(!pkgs.length) throw new NotFoundError(semver.name, 'peers');
 
     res.statusCode = 200;
     res.end(JSON.stringify(pkgs));
   }).catch(function(e){
-    if(e === 'not found'){
-      res.statusCode = 404;
-      return res.end();
-    }else{
-      res.statusCode = 500;
-      res.end(e.message);
-    }
+    if(e instanceof NotFoundError) return next();
+    next(e);
   });
 };
 /*

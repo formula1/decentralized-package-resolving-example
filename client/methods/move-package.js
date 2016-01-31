@@ -3,7 +3,7 @@
 var path = require('path');
 var fs = require('fs');
 var File = require('../../shared/objects/File');
-var packageToSemVer = require('../../shared/transforms/semver/package-to-handle');
+var packageToSemVer = require('../../shared/semver/package-to-handle');
 
 module.exports = function(pkg_folder, destination_parent){
   var destination;

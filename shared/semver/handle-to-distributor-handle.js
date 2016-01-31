@@ -5,7 +5,7 @@ var request = require('request');
 var async = require('async');
 var _ = require('lodash');
 
-var NotFoundError = require('../../errors/NotFound');
+var NotFoundError = require('../errors/NotFound');
 
 var reduceRegistries, addtoWeightedTrustFrom;
 

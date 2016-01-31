@@ -13,8 +13,8 @@
 */
 
 var qs = require('qs');
-var packageToSemver = require('../../../shared/transforms/semver/package-to-handle');
-var handleToPackage = require('../../../shared/requests/handle-to-package');
+var packageToSemver = require('../../../shared/semver/package-to-handle');
+var handleToPackage = require('../../../shared/helpers/handle-to-package');
 
 module.exports = function(packages, distribution, req, res){
   var semver;

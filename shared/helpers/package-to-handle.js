@@ -10,7 +10,7 @@ Ideally there will be many ways to upload a package
 
 */
 
-var git = require('./git/package-to-handle');
+var git = require('../../plugins/git/package-to-handle');
 
 module.exports = function(pkg){
   return git(pkg);

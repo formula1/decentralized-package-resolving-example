@@ -1,7 +1,7 @@
 'use strict';
 
 var tar = require('tar-fs');
-var File = require('../../objects/File');
+var File = require('../../shared/objects/File');
 var Readable = require('stream').Readable;
 
 module.exports = function(tarball, directory){

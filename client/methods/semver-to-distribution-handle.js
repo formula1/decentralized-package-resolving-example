@@ -1,7 +1,7 @@
 'use strict';
 
-var semverToDistHandle = require('../../shared/requests/semver/handle-to-distributor-handle.js');
-var getRequestor = require('../../shared/requests/handle-to-package').getRequestor;
+var semverToDistHandle = require('../../shared/semver/handle-to-distributor-handle.js');
+var getRequestor = require('../../shared/helpers/handle-to-package').getRequestor;
 
 module.exports = function(semver_handle, registries){
   if(registries.length === 0) return Promise.reject('no hosts available');

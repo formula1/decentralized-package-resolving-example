@@ -5,7 +5,7 @@
 var WebTorrent = require('webtorrent');
 var tar = require('tar-fs');
 var fs = require('fs');
-var File = require('../../objects/File');
+var File = require('../../shared/objects/File');
 
 module.exports = function(handle){
   var tmpFullPath = new File(__tmp).newUniqueChild();

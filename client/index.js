@@ -27,7 +27,7 @@ module.exports = Client = function(dirname){
 
 Client.prototype.resolve = function(semver){
   var resolveDistribution = require('./methods/semver-to-distribution-handle');
-  var readableToSemVer = require('../shared/transforms/semver/readable-to-handle');
+  var readableToSemVer = require('../shared/semver/readable-to-handle');
   return this.dbs.registries.get().then(function(registries){
     return resolveDistribution(readableToSemVer(semver), registries);
   });
@@ -43,7 +43,7 @@ Client.prototype.untrust = function(registry){
 
 Client.prototype.install = function(semver){
   var resolveDistribution = require('./methods/semver-to-distribution-handle');
-  var handleToPackage = require('../shared/requests/handle-to-package');
+  var handleToPackage = require('../shared/helpers/handle-to-package');
   var movePackage = require('./methods/move-package');
   var node_modules = this.node_modules;
   return resolveDistribution(semver, this.dbs.registries).then(function(distribution_handle){
@@ -54,7 +54,7 @@ Client.prototype.install = function(semver){
 };
 
 Client.prototype.publish = function(){
-  var packageToHandler = require('../shared/transforms/package-to-handle');
+  var packageToHandler = require('../shared/helpers/package-to-handle');
   var validateHashes = require('./methods/validate-distribution-handles');
   packageToHandler(this.directory).then(function(responses){
     if(responses.successes.length === 0) throw responses.errors;

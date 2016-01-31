@@ -1,7 +1,7 @@
 'use strict';
 
 var qs = require('qs');
-var handleToDistHandle = require('../../../shared/requests/semver/handle-to-distributor-handle');
+var handleToDistHandle = require('../../../shared/semver/handle-to-distributor-handle');
 var SemVer = require('semver');
 
 var NotFoundError = require('../../../shared/errors/NotFound');

@@ -1,6 +1,6 @@
 'use strict';
 
-var File = require('../../objects/File');
+var File = require('../../shared/objects/File');
 var validateSemVer = require('./validate-semver-handle');
 
 module.exports = function(bfolder){

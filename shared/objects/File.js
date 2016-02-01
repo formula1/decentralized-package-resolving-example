@@ -16,6 +16,16 @@ File.prototype.exists = function(){
   });
 };
 
+File.prototype.isDirectory = function(){
+  var filename = this.filename;
+  return new Promise(function(res, rej){
+    fs.stat(filename, function(err, stat){
+      if(err) return rej(err);
+      res(stat.isDirectory());
+    });
+  });
+};
+
 Object.defineProperty(File.prototype, 'extname', {
   get: function(){
     return path.extname(this.filename);

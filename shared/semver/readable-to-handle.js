@@ -26,20 +26,21 @@ module.exports = function(token){
     return {
       name: name,
       tag: 'latest',
+      type: 'semver',
     };
   }
 
   if(!SemVer.validRange(version)){
-    if(version.length === 0){
-      return {
-        name: name,
-        tag: version,
-      };
-    }
+    return {
+      name: name,
+      tag: version,
+      type: 'semver',
+    };
   }
 
   return {
     name: name,
     version: version,
+    type: 'semver',
   };
 };

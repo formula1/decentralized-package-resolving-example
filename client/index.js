@@ -4,10 +4,12 @@ var fs = require('fs');
 var path = require('path');
 var File = require('../shared/objects/File');
 var IndexedDB = require('../shared/objects/IndexedDB');
+var PluginLoader = require('../shared/helpers/plugin-loader');
 var Client;
 
 module.exports = Client = function(dirname){
   this.directory = new File(dirname);
+  this.pluginloader = new PluginLoader(path.resolve(__dirname, '../plugins'), dirname);
   this.node_modules = this.directory.resolve('./node_modules');
   var dbs = this.dbs = {
     registries: path.join(dirname, 'registries.json'),
@@ -25,11 +27,19 @@ module.exports = Client = function(dirname){
   });
 };
 
-Client.prototype.resolve = function(semver){
-  var resolveDistribution = require('./methods/semver-to-distribution-handle');
-  var readableToSemVer = require('../shared/semver/readable-to-handle');
-  return this.dbs.registries.get().then(function(registries){
-    return resolveDistribution(readableToSemVer(semver), registries);
+Client.prototype.resolve = function(readable){
+  var semverToDistHandles = require('../shared/semver/handle-to-distributor-handle.js');
+  var reduceDistHandles = require('./methods/reduce-distribution-handles');
+  var pluginloader = this.pluginloader;
+  var registryDB = this.dbs.registries;
+  return pluginloader.readableToHandle(readable).then(function(handle){
+    if(handle.type !== 'semver') return handle;
+    return registryDB.get().then(function(registries){
+      if(!registries.length) throw 'no hosts available';
+      return semverToDistHandles(handle, registries);
+    }).then(function(dist_handles){
+      return reduceDistHandles(pluginloader, dist_handles);
+    });
   });
 };
 
@@ -41,13 +51,14 @@ Client.prototype.untrust = function(registry){
   return this.dbs.registries.remove(registry);
 };
 
-Client.prototype.install = function(semver){
-  var resolveDistribution = require('./methods/semver-to-distribution-handle');
-  var handleToPackage = require('../shared/helpers/handle-to-package');
+Client.prototype.install = function(readable){
+  var pluginloader = this.pluginloader;
   var movePackage = require('./methods/move-package');
   var node_modules = this.node_modules;
-  return resolveDistribution(semver, this.dbs.registries).then(function(distribution_handle){
-    return handleToPackage(distribution_handle);
+  return this.resolve(readable).then(function(distribution_handle){
+    return pluginloader.handleToConsumable(distribution_handle);
+  }).then(function(consumable){
+    return pluginloader.consumableToPackage(consumable);
   }).then(function(package_folder){
     return movePackage(package_folder, node_modules);
   });

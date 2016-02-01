@@ -63,18 +63,21 @@ process.on('uncaughtException', function(e){
 var aLines = aFork.stdout.pipe(split());//.on('data', console.log.bind(console));
 var bLines = bFork.stdout.pipe(split());
 
+if(!fs.existsSync(aDir)) fs.mkdirSync(aDir);
 fs.writeFileSync(`${aDir}/packages.json`, '[]');
 fs.writeFileSync(`${aDir}/registries.json`, '[]');
 fs.writeFileSync(`${aDir}/untrusted.json`, '[]');
 fs.writeFileSync(`${aDir}/distributors.json`, '[]');
 mkdirp.sync(`${bDir}/distribution`);
 
+if(!fs.existsSync(bDir)) fs.mkdirSync(bDir);
 fs.writeFileSync(`${bDir}/packages.json`, '[]');
 fs.writeFileSync(`${bDir}/registries.json`, '[]');
 fs.writeFileSync(`${bDir}/untrusted.json`, '[]');
 fs.writeFileSync(`${bDir}/distributors.json`, '[]');
 mkdirp.sync(`${bDir}/distribution`);
 
+if(!fs.existsSync(clientCWD)) fs.mkdirSync(clientCWD);
 fs.writeFileSync(path.resolve(clientCWD, './registries.json'), '[]');
 
 var fns;

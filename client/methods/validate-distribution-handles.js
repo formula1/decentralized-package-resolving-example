@@ -1,48 +1,37 @@
 'use strict';
 
-var async = require('async');
-var magnetUri = require('magnet-uri');
-
-var validateTorrent;
-
-module.exports = function(distribution_handles){
-  var distribution_methods = {};
+module.exports = function(pluginloader, distribution_handles){
+  var dist_methods = {};
   var errors = [];
-  return new Promise(function(res){
-    async.each(distribution_handles, function(handle, next){
-      if(!distribution_methods[handle.type]){
-        distribution_methods[handle.type] = {};
-      }
+  return Promise.all(distribution_handles.map(function(handle){
+    if(!handle.type){
+      errors.push(new Error('improper handle format'));
+      return Promise.resolve(false);
+    }
 
-      var unique = distribution_methods[handle.type];
-      var netvalue;
-      try{
-        switch(handle.type){
-          case 'torrent': netvalue = validateTorrent(handle); break;
-          case 'git':
-          case 'http':
-          default: throw 'unimplemented';
-        }
-      }catch(e){
-        errors.push({ error: e, handle: handle });
-        return next();
-      }
-
-      if(!(netvalue in unique)){
-        unique[netvalue] = [handle];
+    return pluginloader.filterPlugins('validateHandle', handle)
+    .then(function(plugin){
+      return plugin.validateHandle(handle).then(function(){
+        return plugin.handleToReadable(handle);
+      });
+    }).then(function(readable){
+      if(!dist_methods[handle.type]) dist_methods[handle.type] = {};
+      var cur_method = dist_methods[handle.type];
+      if(!(readable in cur_method)){
+        cur_method[readable] = [handle];
       }else{
-        unique[netvalue].push(handle);
+        cur_method[readable].push(handle);
       }
 
-      next();
-    },
-
-    function(){
-      res({ errors: errors, distribution_methods: distribution_methods });
+      return handle;
+    }).catch(function(e){
+      errors.push(e);
+      return false;
     });
+  })).then(function(){
+    return {
+      errors: errors,
+      distribution_methods: dist_methods,
+    };
   });
-};
-
-validateTorrent = function(handle){
-  return magnetUri.decode(handle.handle).infoHash;
 };

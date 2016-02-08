@@ -1,5 +1,7 @@
 'use strict';
 
+var fs = require('fs');
+var request = require('request');
 var validUrl = require('valid-url');
 
 module.exports = {};
@@ -24,4 +26,14 @@ module.exports.validateHandle = function(handle){
   if(!validUrl.isUri(handle.handle)) throw new Error('handle is not uri');
 
   return handle;
+};
+
+module.exports.handleToConsumable = function(handle, file){
+  return new Promise(function(res, rej){
+    request.get(handle.handle)
+    .pipe(fs.createWriteStream(file.filename))
+    .on('finish', function(){
+      res(file);
+    }).on('error', rej);
+  });
 };

@@ -32,6 +32,12 @@ Object.defineProperty(File.prototype, 'extname', {
   },
 });
 
+Object.defineProperty(File.prototype, 'basename', {
+  get: function(){
+    return path.basename(this.filename);
+  },
+});
+
 File.prototype.createIfNotExists = function(asDirectory){
   var _this = this;
   var filename = this.filename;

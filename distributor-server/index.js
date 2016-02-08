@@ -7,12 +7,15 @@ var path = require('path');
 
 var File = require('../shared/objects/File');
 var IndexedDB = require('../shared/objects/IndexedDB');
-var HttpRouter = require('./http');
-var TorrentClient = require('./torrent');
 
-module.exports = function(dirname, http_port, torrent_port){
+var __distDir = new File(__dirname).resolve('./distribution');
+
+var DistributionServer;
+
+module.exports = DistributionServer = function(dirname){
+  this.dirname = new File(dirname);
   var dbs = this.dbs = {
-    registries: path.join(dirname, 'registries.json'),
+    packages: path.join(dirname, 'packages.json'),
   };
 
   Object.keys(dbs).forEach(function(name){
@@ -26,39 +29,29 @@ module.exports = function(dirname, http_port, torrent_port){
     dbs[name] = new IndexedDB(filename);
   });
 
-  var folders = this.folders = {
-    downloads: path.join(dirname, 'downloads'),
-  };
+  this.services = [];
+};
 
-  Object.keys(folders).forEach(function(name){
-    var folderpath = folders[name];
-    if(!fs.existsSync(folderpath)){
-      fs.mkdirSync(folderpath);
-    }
+DistributionServer.prototype.addPackage = function(packageDir){
+  return this.dbs.packages.add(packageDir.basename, { filename: packageDir.filename });
+};
 
-    dbs[name] = new File(folderpath);
-  });
-
-  return Promise.all([
-    HttpRouter(dbs.registries, http_port),
-    TorrentClient(folders.downloads, torrent_port),
-  ]).then(function(ret){
-    var router = ret[0], client = ret[1];
-
-    router.get('/publish', function(req, res){
-      client.add(req.query.handle, { path: client.downloadDir }, function(torrent){
-        torrent.on('done', function(){
-          res.statusCode = 200;
-          res.end();
-        });
-      });
+DistributionServer.prototype.listen = function(type, port){
+  port = parseInt(port);
+  var dirname = this.dirname;
+  var packages = this.dbs.packages;
+  var services = this.services;
+  __distDir.children().then(function(children){
+    if(children.indexOf(type) === -1) throw new Error('this type does not exist');
+    var Service = require(__distDir.resolve(`./${type}`));
+    var service = new Service(dirname);
+    return service;
+  }).then(function(service){
+    return service.setPackages(packages).then(function(){
+      return service.listen(port);
+    }).then(function(){
+      services.push(service);
+      return service;
     });
-
-    return {
-      dbs: dbs,
-      router: router,
-      client: client,
-      folders: folders,
-    };
   });
 };

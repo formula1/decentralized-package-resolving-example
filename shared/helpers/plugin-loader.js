@@ -2,6 +2,7 @@
 
 var path = require('path');
 var fs = require('fs');
+var tar = require('tar-fs');
 
 var PluginLoader, bestMatched, filterPlugins;
 
@@ -65,6 +66,10 @@ proto.consumableToPackage = function(file){
 
 proto.filterPlugins = function(verb, object){
   return filterPlugins(this.plugins, verb, object);
+};
+
+PluginLoader.copy = function(input_dir, output_dir){
+  tar.pack(input_dir).pipe(tar.extract(output_dir));
 };
 
 PluginLoader.filterPlugins = filterPlugins = function(plugins, verb, object){

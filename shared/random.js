@@ -17,6 +17,6 @@ module.exports = {
 
 fill = function(num, amount, other){
   num = num.toString(32);
-  while(num.length < amount) num = other + amount;
+  while(num.length < amount) num = other + num;
   return num;
 };

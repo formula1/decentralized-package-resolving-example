@@ -8,13 +8,15 @@ var DistributionServer = require('./index.js');
 
 var dist_server;
 
+process.nextTick(program.parse.bind(program, process.argv));
+
 program
   .command('start [directory]')
   .description('Starts the distribution server')
   .action(function(directory){
     dist_server = new DistributionServer(directory || process.cwd());
     process.stdin.pipe(split()).on('data', function(line){
-      program.parse([void 0, void 0].concat(shlex(line)));
+      program.parse([void 0, void 0].concat(shlex.parse(line)));
     });
 
     console.log('distribution server online');
@@ -27,17 +29,17 @@ program
     dist_server.addPackage(name, pkg).then(function(){
       console.log('added', name);
     }).catch(function(e){
-      console.error(e);
+      console.error('Package ERROR', e);
     });
   });
 
 program
   .command('serve <type> <port>')
-  .description('Add a package')
+  .description('Distribute via a certian service')
   .action(function(type, port){
     dist_server.listen(type, port).then(function(){
-      console.log('listining for', name, 'at', port);
+      console.log('listening for', type, 'at', port);
     }).catch(function(e){
-      console.error(e);
+      console.error('Listen ERROR', e.stack);
     });
   });

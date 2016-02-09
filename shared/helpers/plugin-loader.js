@@ -57,10 +57,10 @@ proto.consumableToPackage = function(file){
     return file;
   }).catch(function(e){
     console.error('the consumable is not a package ', e);
-    return filterPlugins(this.plugins, 'canHandleFile', file)
+    return filterPlugins(_this.plugins, 'canHandleFile', file)
     .then(bestMatched).then(function(plugin){
       return plugin.consumableToPackage(file);
-    }).then(_this.consumableToPackage.bind(this));
+    }).then(_this.consumableToPackage.bind(_this));
   });
 };
 

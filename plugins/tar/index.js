@@ -11,20 +11,23 @@ module.exports.canHandleFile = function(file){
   return Promise.resolve(path.extname(file.filename) === '.tar');
 };
 
-module.exports.consumableToPackage = function(tarball, directory){
+module.exports.consumableToPackage = function(tarball){
   return new Promise(function(res, rej){
     var tarballStream;
     if(tarball instanceof Readable){
       tarballStream = tarball;
     }else if(tarball instanceof File){
-      tarballStream = tarball.getReadStream();
+      tarballStream = tarball.streamContents();
     }else if(typeof tarball === 'string'){
       tarballStream = new File(tarball).getReadStream();
     }
 
-    tarballStream.pipe(tar.extract(directory))
+    var fn = tarball.filename;
+    var outdir = tarball.resolve(`../${path.basename(fn, path.extname(fn))}`);
+    console.log(outdir.filename);
+    tarballStream.pipe(tar.extract(outdir.filename))
     .on('finish', function(){
-      res(new File(directory));
+      res(outdir);
     }).on('error', rej);
   });
 };

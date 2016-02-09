@@ -3,10 +3,17 @@
 var fs = require('fs');
 var path = require('path');
 var random = require('../random');
+var tar = require('tar-fs');
 
 var File;
 module.exports = File = function(filename){
-  this.filename = filename;
+  if(filename instanceof File){
+    this.filename = filename.filename;
+  }else if(typeof filename === 'string'){
+    this.filename = filename;
+  }else{
+    throw new Error(`cannot handle ${filename}`);
+  };
 };
 
 File.prototype.exists = function(){
@@ -88,6 +95,16 @@ File.prototype.getContents = function(){
   });
 };
 
+File.prototype.setContents = function(contents){
+  var filename = this.filename;
+  return new Promise(function(res, rej){
+    fs.writeFile(filename, contents, function(err){
+      if(err) return rej(err);
+      res();
+    });
+  });
+};
+
 File.prototype.streamContents = function(){
   return fs.createReadStream(this.filename);
 };
@@ -96,6 +113,17 @@ File.prototype.toString = function(){
   return `File [${this.filename}]`;
 };
 
-File.prototype.newUniqueChild = function(){
-  return new File(path.join(this.filename, random.id()));
+File.prototype.newUniqueChild = function(ext){
+  var filename = ext ? `${random.id()}.${ext}` : random.id();
+  return new File(path.join(this.filename, filename));
+};
+
+File.prototype.copyTo = function(new_location){
+  if(!(new_location instanceof File)) new_location = new File(new_location);
+  var fn = this.filename;
+  return new Promise(function(res, rej){
+    tar.pack(fn).pipe(tar.extract(new_location.filename)).on('finish', function(){
+      res(new_location);
+    }).on('error', rej);
+  });
 };

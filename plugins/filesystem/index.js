@@ -1,14 +1,11 @@
 'use strict';
 
-var path = require('path');
-var tar = require('tar-fs');
 var File = require('../../shared/objects/File');
-var Readable = require('stream').Readable;
 
 module.exports = {};
 
 module.exports.readableToHandle = function(readable){
-  if(!/^[\.\/]/) throw new Error('handle is not filesystem path');
+  if(!/^\.{0,2}\//.test(readable)) return Promise.reject(new Error('handle is not filesystem path'));
   var ret = {
     type: 'filesystem',
     handle: readable,
@@ -17,26 +14,27 @@ module.exports.readableToHandle = function(readable){
   return Promise.resolve(ret);
 };
 
-module.exports.handleToConsumable = function(handle){
+module.exports.validateHandle = function(handle){
   if(!handle.type === 'filesystem')
     return Promise.reject('Handle improper type');
-
-  var file = new File(handle.handle);
-  return file.exists().then(function(boo){
-    if(!boo) throw new Error('This file does not exists');
-    return file;
-  });
+  return new File(handle.handle).exists();
 };
 
+module.exports.handleToConsumable = function(handle){
+  return new File(handle.handle);
+};
+
+var validatePackage = require('../../shared/semver/validate-package');
 module.exports.canHandleFile = function(file){
-  return file.isDirectory();
+  return file.isDirectory().then(function(boo){
+    if(!boo) throw new Error('file needs to be a folder');
+    return validatePackage(file);
+  }).then(function(boo){
+    if(!boo) throw new Error('File is not package');
+    return true;
+  });
 };
 
-module.exports.consumableToPackage = function(original_package, directory){
-  return new Promise(function(res, rej){
-    tar.pack(original_package.filename).pipe(tar.extract(directory.filename))
-    .on('finish', function(){
-      res(new File(directory));
-    }).on('error', rej);
-  });
+module.exports.consumableToPackage = function(original_package){
+  return original_package;
 };

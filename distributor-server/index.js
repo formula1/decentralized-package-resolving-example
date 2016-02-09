@@ -32,8 +32,8 @@ module.exports = DistributionServer = function(dirname){
   this.services = [];
 };
 
-DistributionServer.prototype.addPackage = function(packageDir){
-  return this.dbs.packages.add(packageDir.basename, { filename: packageDir.filename });
+DistributionServer.prototype.addPackage = function(name, filepath){
+  return this.dbs.packages.add(name, { filename: filepath, name: name });
 };
 
 DistributionServer.prototype.listen = function(type, port){
@@ -41,9 +41,12 @@ DistributionServer.prototype.listen = function(type, port){
   var dirname = this.dirname;
   var packages = this.dbs.packages;
   var services = this.services;
-  __distDir.children().then(function(children){
-    if(children.indexOf(type) === -1) throw new Error('this type does not exist');
-    var Service = require(__distDir.resolve(`./${type}`));
+  return __distDir.getChildren().then(function(children){
+    if(!children.some((child)=>{ return child.basename === type; })){
+      throw new Error('this type does not exist');
+    }
+
+    var Service = require(__distDir.resolve(`./${type}`).filename);
     var service = new Service(dirname);
     return service;
   }).then(function(service){

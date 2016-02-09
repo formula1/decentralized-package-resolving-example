@@ -12,7 +12,7 @@ module.exports = function(pkg){
     if(!boo) throw new Error('This is a folder that is not a package');
     return pkgjsonFile.getContents();
   }).then(function(contents){
-    var pkgjson = JSON.stringify(contents.toString('utf-8'));
+    var pkgjson = JSON.parse(contents.toString('utf-8'));
     if(!pkgjson.name) throw new Error('Package needs a name');
     if(!pkgjson.version) throw new Error('Package needs a version');
     if(!SemVer.valid(pkgjson.version)) throw new Error('Package version is invalid');

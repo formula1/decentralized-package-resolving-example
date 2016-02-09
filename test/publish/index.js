@@ -2,7 +2,6 @@
 
 var tap = require('tap');
 var async = require('async');
-var child_process = require('child_process');
 var rimraf = require('rimraf');
 
 var children = [];

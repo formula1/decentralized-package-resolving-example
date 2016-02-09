@@ -24,7 +24,6 @@ module.exports.consumableToPackage = function(tarball){
 
     var fn = tarball.filename;
     var outdir = tarball.resolve(`../${path.basename(fn, path.extname(fn))}`);
-    console.log(outdir.filename);
     tarballStream.pipe(tar.extract(outdir.filename))
     .on('finish', function(){
       res(outdir);

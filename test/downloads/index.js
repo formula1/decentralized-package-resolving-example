@@ -72,13 +72,11 @@ Promise.resolve().then(function(){
       return itemRunner(item);
     });
   }, Promise.resolve());
-}).then(function(){
-  console.log('finished');
-  tap.end();
 }).catch(function(e){
   console.log(e);
 }).then(function(){
   tap.end();
+  process.exit();
 });
 
 cloneFolder = function(){
@@ -131,13 +129,11 @@ startServerProcess = function(item){
 
       c.stdin.write(`serve ${type} 3000 \n`);
     });
-  }).then(function(c){
+  }).then(function(){
     cps.push(c);
     c.on('exit', function(){
       cps.splice(cps.indexOf(c), 1);
     });
-
-    console.log(item.type);
 
     return c;
   });
@@ -164,50 +160,51 @@ diff = function(a, b){
 
 itemRunner = function(item){
   return (item.prepare ? item.prepare(item) : Promise.resolve()).then(function(prepOut){
-    return tap.test(`Testing Downloadable plugin type ${item.type}`, { bail: true }, function(t){
-      Promise.resolve().then(function(){
-        return new Promise(function(res){
-          return t.test('readable to handle', function(ct){
-            return pluginloader.readableToHandle(item.readable).then(function(handle){
-              ct.equal(handle.type, item.type, 'Readable was processed by the correct plugin');
-              ct.end();
-              res(handle);
-            });
-          });
-        });
-      }).then(function(handle){
-        return new Promise(function(res){
-          return t.test('handle to consumable', function(ct){
-            return pluginloader.handleToConsumable(handle).then(function(consumable){
-              ct.ok(consumable instanceof File, 'handleToConsumable always returns a file');
-              ct.end();
-              res(consumable);
-            });
-          });
-        });
-      }).then(function(consumable){
-        return new Promise(function(res){
-          return t.test('consumable to package', function(ct){
-            return pluginloader.consumableToPackage(consumable).then(function(package_folder){
-              ct.ok(package_folder instanceof File, 'consumableToPackage always returns a file');
-              return isPackage(package_folder).then(function(boo){
-                ct.ok(boo, 'consumableToPackage always returns a package');
-                return diff(package_folder.filename, packagePath);
-              }).then(function(result){
-                ct.equal(result.deviation, 0, 'The original folder is exactly the same as the packaged');
+    return new Promise(function(fRes){
+      tap.test(`Testing Downloadable plugin type ${item.type}`, { bail: true }, function(t){
+        return Promise.resolve().then(function(){
+          return new Promise(function(res){
+            return t.test('readable to handle', function(ct){
+              return pluginloader.readableToHandle(item.readable).then(function(handle){
+                ct.equal(handle.type, item.type, 'Readable was processed by the correct plugin');
                 ct.end();
-                res();
+                res(handle);
               });
             });
           });
-        });
-      }).catch(function(e){
-        console.log('error', e.stack);
-      }).then(function(){
-        console.log('ending');
-        return (item.cleanup ? item.cleanup(item, prepOut) : Promise.resolve()).then(function(){
-          t.end();
-          return true;
+        }).then(function(handle){
+          return new Promise(function(res){
+            return t.test('handle to consumable', function(ct){
+              return pluginloader.handleToConsumable(handle).then(function(consumable){
+                ct.ok(consumable instanceof File, 'handleToConsumable always returns a file');
+                ct.end();
+                res(consumable);
+              });
+            });
+          });
+        }).then(function(consumable){
+          return new Promise(function(res){
+            return t.test('consumable to package', function(ct){
+              return pluginloader.consumableToPackage(consumable).then(function(package_folder){
+                ct.ok(package_folder instanceof File, 'consumableToPackage always returns a file');
+                return isPackage(package_folder).then(function(boo){
+                  ct.ok(boo, 'consumableToPackage always returns a package');
+                  return diff(package_folder.filename, packagePath);
+                }).then(function(result){
+                  ct.equal(result.deviation, 0, 'The original folder is exactly the same as the packaged');
+                  ct.end();
+                  res();
+                });
+              });
+            });
+          });
+        }).catch(function(e){
+          console.log('error', e.stack);
+        }).then(function(){
+          return (item.cleanup ? item.cleanup(item, prepOut) : Promise.resolve()).then(function(){
+            t.end();
+            fRes();;
+          });
         });
       });
     });

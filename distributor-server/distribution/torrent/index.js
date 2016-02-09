@@ -1,7 +1,7 @@
 'use strict';
 
 var WebTorrent = require('webtorrent');
-var Server = require('bittorrent-tracker/server');
+var Server = require('bittorrent-tracker').Server;
 var tar = require('tar-fs');
 var concatStream = require('concat-stream');
 
